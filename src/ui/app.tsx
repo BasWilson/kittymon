@@ -1,7 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
-import { Scene } from "./engine/scene";
-import { GLOBALS } from "./main";
-import { GameScreen } from "./ui/screens/game-screen";
+import { Scene } from "../engine/scene";
+import { GLOBALS } from "../main";
+import { GameScreen } from "./screens/game-screen";
 
 export function App() {
 

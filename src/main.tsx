@@ -1,6 +1,6 @@
-import { App } from '@/app.tsx'
 import { loadAssets } from '@/game/assets.ts'
-import '@/index.css'
+import { App } from '@/ui/app'
+import '@/ui/index.css'
 import * as PIXI from 'pixi.js'
 import { render } from 'preact'
 import { SceneManager } from './engine/scene'
@@ -22,9 +22,10 @@ export const GLOBALS = {
 }
 
 loadAssets().then(() => {
-  GLOBALS.sceneManager.addScene(new WorldScene());
-  GLOBALS.sceneManager.addScene(new BattleScene());
-  GLOBALS.sceneManager.loadScene("world");
+  const { sceneManager } = GLOBALS;
+  sceneManager.addScene(new WorldScene());
+  sceneManager.addScene(new BattleScene());
+  sceneManager.loadScene("world");
 });
 
 document.body.appendChild(game.view as unknown as Node)

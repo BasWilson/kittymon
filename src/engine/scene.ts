@@ -20,9 +20,6 @@ export class SceneManager {
     scenes = new Map<SceneId, Scene>();
     activeScene: Scene | null = null;
 
-    constructor() {
-    }
-
     addScene(scene: Scene) {
         this.scenes.set(scene.name, scene);
     }
