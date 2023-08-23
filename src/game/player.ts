@@ -1,8 +1,8 @@
 import { keyboard } from "@/engine/input";
 import { loadSprite } from "@/engine/sprites";
+import { Area } from "@/game/area";
 import { game } from "@/main";
 import * as PIXI from "pixi.js";
-import { Area } from "./area";
 
 export class Player {
 
@@ -86,7 +86,6 @@ export class Player {
   }
 
   update() {
-
     if (!this.controlsEnabled) return;
     if (this.movingTo) {
       this.move(this.movingTo);
@@ -94,7 +93,6 @@ export class Player {
   }
 
   move(direction: "up" | "down" | "left" | "right") {
-    // check for collisions
     const newX = this.sprite.x + (direction === "left" ? -this.playerStep : direction === "right" ? this.playerStep : 0);
     const newY = this.sprite.y + (direction === "up" ? -this.playerStep : direction === "down" ? this.playerStep : 0);
     let canMove = true;
@@ -112,7 +110,7 @@ export class Player {
           && bounds1.y + bounds1.height > bounds2.y;
         if (hit) {
           hitTiles.push(tile.id);
-          if (tile.props.blockMovement) {
+          if (tile.props.isBarrier) {
             canMove = false;
             return;
           }

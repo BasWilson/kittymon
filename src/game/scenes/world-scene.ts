@@ -1,14 +1,16 @@
 import { Scene, SceneId, UiId } from "@/engine/scene";
 import { Area } from "@/game/area";
+import { Player } from "@/game/player";
 import { BarrierTile, GrassTile, TallGrassTile, WaveTile } from "@/game/tiles";
 import { game } from "@/main";
-import { Player } from "../player";
 
 export class WorldScene implements Scene {
 
+    // scene interface variables
     name: SceneId = "world";
     uiId: UiId = "game";
 
+    // scene specific variables
     areas: Area[] = [];
 
     async buildScene() {

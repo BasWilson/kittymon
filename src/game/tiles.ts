@@ -10,7 +10,7 @@ export type TileProps = {
   y: number,
   spriteName?: string,
   area?: Area,
-  blockMovement?: boolean,
+  isBarrier?: boolean,
   onSpawn?: (tile: Tile) => void
 }
 
@@ -20,7 +20,7 @@ export type AnimatedTileProps = {
   spriteName?: string,
   animationSpeed?: number,
   area?: Area,
-  blockMovement?: boolean,
+  isBarrier?: boolean,
   onSpawn?: (tile: AnimatedTile) => void
 }
 
@@ -127,7 +127,7 @@ export class BarrierTile extends BasicTile {
   constructor(props: TileProps) {
     super({
       ...props,
-      blockMovement: true,
+      isBarrier: true,
       spriteName: "tree",
     })
   }
