@@ -1,7 +1,7 @@
 import { GLOBALS } from "@/main";
 
 export type UiId = "game" | "menu" | "battle";
-export type SceneId = "world" | "battle";
+export type SceneId = "world" | "battle" | "kitty_center";
 
 export type SceneProps = {
     name: SceneId;

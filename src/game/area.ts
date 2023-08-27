@@ -2,7 +2,7 @@ import { game } from "@/main";
 import * as PIXI from "pixi.js";
 import { Tile } from "./tiles";
 
-export type AreaIds = "start_town";
+export type AreaIds = "start_town" | "kitty_center";
 
 export class Area {
     container = new PIXI.Container();

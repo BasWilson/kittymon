@@ -1,6 +1,5 @@
 import { id } from "@/engine/id";
 import { loadSprite, loadSpritesheet } from "@/engine/sprites";
-import { GLOBALS } from "@/main";
 import * as PIXI from "pixi.js";
 import { Area } from "./area";
 import { Player } from "./player";
@@ -26,6 +25,7 @@ export type AnimatedTileProps = {
 
 export interface Tile {
   id: number;
+  container: PIXI.Container;
   sprite: PIXI.Sprite | PIXI.AnimatedSprite | null;
   props: TileProps | AnimatedTileProps;
   spawn(props: TileProps): Promise<Tile>;
@@ -34,6 +34,7 @@ export interface Tile {
 }
 
 export class BasicTile implements Tile {
+  container: PIXI.Container<PIXI.DisplayObject> = new PIXI.Container();
   sprite: PIXI.Sprite | null = null;
   id: number = id();
   constructor(
@@ -41,14 +42,26 @@ export class BasicTile implements Tile {
   ) { }
 
   async spawn() {
-    if (!this.props.spriteName) return this;
+
+    this.container.x = this.props.x;
+    this.container.y = this.props.y;
+    if (this.props.area?.container) {
+      this.props.area.container.addChild(this.container);
+    }
+
+    if (!this.props.spriteName) {
+      this.container.width = 32;
+      this.container.height = 32;
+      this.props?.onSpawn?.(this);
+      this.props.area?.addTile(this);
+      return this;
+    }
+
     const sprite = await loadSprite(this.props.spriteName);
     this.sprite = sprite;
-    this.sprite.x = this.props.x
-    this.sprite.y = this.props.y
     this.sprite.name = this.props.spriteName;
-    if (this.props.area?.container) {
-      this.props.area.container.addChild(this.sprite);
+    if (this.container) {
+      this.container.addChild(this.sprite);
     }
     this.props?.onSpawn?.(this);
     this.props.area?.addTile(this);
@@ -57,6 +70,7 @@ export class BasicTile implements Tile {
 }
 
 export class AnimatedTile implements Tile {
+  container: PIXI.Container<PIXI.DisplayObject> = new PIXI.Container();
   sprite: PIXI.AnimatedSprite | null = null;
   id: number = id();
   constructor(
@@ -64,15 +78,27 @@ export class AnimatedTile implements Tile {
   ) { }
 
   async spawn() {
-    if (!this.props.spriteName) return this;
+
+    this.container.x = this.props.x;
+    this.container.y = this.props.y;
+    if (this.props.area?.container) {
+      this.props.area.container.addChild(this.container);
+    }
+
+    if (!this.props.spriteName) {
+      this.container.width = 32;
+      this.container.height = 32;
+      this.props?.onSpawn?.(this);
+      this.props.area?.addTile(this);
+      return this;
+    }
+
     const sprite = await loadSpritesheet(this.props.spriteName);
     this.sprite = sprite;
-    this.sprite.x = this.props.x;
-    this.sprite.y = this.props.y;
     this.sprite.animationSpeed = this.props.animationSpeed || 0.02;
     this.sprite.name = this.props.spriteName;
-    if (this.props.area?.container) {
-      this.props.area.container.addChild(this.sprite);
+    if (this.container) {
+      this.container.addChild(this.sprite);
     }
     this.props?.onSpawn?.(this);
     this.props.area?.addTile(this);
@@ -93,11 +119,10 @@ export class WaveTile extends AnimatedTile {
   }
 }
 
-export class GrassTile extends BasicTile {
+export class WalkableTile extends BasicTile {
   constructor(props: TileProps) {
     super({
       ...props,
-      spriteName: "grass",
     })
   }
 }
@@ -116,8 +141,8 @@ export class TallGrassTile extends AnimatedTile {
   trigger(player: Player) {
     const rand = Math.random();
     if (rand < 0.333) {
-      player.setControlsEnabled(false);
-      GLOBALS.sceneManager.loadScene("battle");
+      // player.setControlsEnabled(false);
+      // GLOBALS.sceneManager.loadScene("battle");
     }
   }
 }
@@ -128,7 +153,18 @@ export class BarrierTile extends BasicTile {
     super({
       ...props,
       isBarrier: true,
-      spriteName: "tree",
     })
+  }
+}
+
+export class TriggerTile extends BasicTile {
+  constructor(props: TileProps, public onTriggerEnter: (player: Player) => Promise<void>) {
+    super({
+      ...props
+    })
+  }
+
+  trigger(player: Player) {
+    this.onTriggerEnter(player)
   }
 }

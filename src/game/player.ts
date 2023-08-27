@@ -8,20 +8,23 @@ export class Player {
 
   sprite: PIXI.Sprite;
   keyboardEvents: any[] = [];
-  playerStep = 1;
+  playerStep = 2;
   movingTo: "left" | "right" | "up" | "down" | null = null;
+  previousMovingDirection: "left" | "right" | "up" | "down" | null = null;
   lastMove = Date.now();
   controlsEnabled = false;
+  tileSnapping = true;
   previousTiles: number[] | null = null;
   activeArea: Area | null = null;
+  movingHeldSince = 0;
 
-  constructor() {
+  constructor(x: number, y: number) {
     this.sprite = new PIXI.Sprite();
     loadSprite("player").then((sprite) => {
       this.sprite.texture = sprite.texture;
-      this.sprite.scale = new PIXI.Point(.5, .5);
-      this.sprite.x = 4 * 32;
-      this.sprite.y = 4 * 32;
+      // this.sprite.scale = new PIXI.Point(.5, .5);
+      this.sprite.x = x;
+      this.sprite.y = y;
       game.stage.addChild(this.sprite);
     });
 
@@ -78,6 +81,10 @@ export class Player {
     this.controlsEnabled = enabled;
   }
 
+  setSnappingEnabled(enabled: boolean) {
+    this.tileSnapping = enabled;
+  }
+
   destroy() {
     this.keyboardEvents.forEach((event) => {
       event.unsubscribe();
@@ -88,7 +95,35 @@ export class Player {
   update() {
     if (!this.controlsEnabled) return;
     if (this.movingTo) {
-      this.move(this.movingTo);
+
+      // reset movingheld in the case the user changes direction
+
+      if (this.movingHeldSince === 0) {
+        this.movingHeldSince = Date.now()
+      }
+      const timeSinceKey = Date.now() - this.movingHeldSince;
+      const keyHeldDownLongEnough = timeSinceKey > 100;
+
+      if (keyHeldDownLongEnough) {
+        this.setSnappingEnabled(true);
+        this.move(this.movingTo);
+      }
+
+    } else if (!this.movingTo) {
+      this.movingHeldSince = 0;
+
+      // if (!this.tileSnapping) return;
+      // const tileX = Math.round(this.sprite.x / 32);
+      // const tileY = Math.round(this.sprite.y / 32);
+      // GLOBALS.animationController.animate({
+      //   duration: 100,
+      //   sprite: this.sprite,
+      //   to: { x: tileX * 32, y: tileY * 32 },
+      //   onFinished: () => {
+      //     this.setSnappingEnabled(false)
+      //   }
+      // })
+
     }
   }
 
@@ -99,21 +134,20 @@ export class Player {
 
     const areaTiles = this.activeArea?.tiles;
     const hitTiles: number[] = [];
+
     areaTiles?.forEach((tile) => {
       const newPoint = new PIXI.Point(newX, newY);
       const bounds1 = new PIXI.Rectangle(newPoint.x, newPoint.y, this.sprite.width, this.sprite.height);
-      if (tile.sprite) {
-        const bounds2 = tile.sprite.getBounds();
-        const hit = bounds1.x < bounds2.x + bounds2.width
-          && bounds1.x + bounds1.width > bounds2.x
-          && bounds1.y < bounds2.y + bounds2.height
-          && bounds1.y + bounds1.height > bounds2.y;
-        if (hit) {
-          hitTiles.push(tile.id);
-          if (tile.props.isBarrier) {
-            canMove = false;
-            return;
-          }
+      const bounds2 = tile.container.getBounds();
+      const hit = bounds1.x < bounds2.x + bounds2.width
+        && bounds1.x + bounds1.width > bounds2.x
+        && bounds1.y < bounds2.y + bounds2.height
+        && bounds1.y + bounds1.height > bounds2.y;
+      if (hit) {
+        hitTiles.push(tile.id);
+        if (tile.props.isBarrier) {
+          canMove = false;
+          return;
         }
       }
     });
